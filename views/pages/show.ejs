@@ -1,0 +1,148 @@
+<!-- views/pages/show.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=1024" />
+        <title>Building Impressive Presentations with Impress.js | First Impress Presentation</title>
+        <link href="http://fonts.googleapis.com/css?family=Oswald:bold|Arvo:bold|Cutive+bold|Orbitron:bold|Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+	<div style="float:right;">
+		<button style="top: 0; right:0;" onclick="launchFullscreen(document.documentElement);">Fullscreen</button>
+		
+	<!-- audio player -->
+    <audio id="audio_player" loop>
+		<!-- source preload="auto" src="audio/SleepAway.mp3" type="audio/mpeg" -->
+		<source src="audio/<%= page_params.audio %>" type="audio/ogg">
+        Your browser does not support HTML5 audio.
+    </audio>
+	
+	</div>
+        <div id="impress">
+            <div id="intro" class="step slide" data-x="-1000" data-y="-1000" data-scale="3">
+                <div><p class="title1">Building Impressive Presentations</p>
+                    <p class="title1">with</p>
+                    <p class="title2">Impress.js</p></div>
+            </div>
+
+            <div id="guidelines" class="step slide" data-x="-1000" data-y="-2500" data-scale="10">
+                <iframe src="http://www.drzhangortho.com/meet_dr_zhang.html"></iframe>
+
+            </div>
+
+            <div id="graphic" class="step slide" data-x="1000" data-y="-1500" data-rotate="90">
+                <!-- iframe src="http://www.marketwatch.com/markets"></iframe -->
+				<div class="round">Step 2</div>
+
+            </div>
+
+            <div id="video" class="step slide" data-x="-1000" data-y="-500" data-rotate="180" data-rotate_z="180">
+<!-- iframe width="640" height="385" src="http://www.youtube.com/embed/0319ZgKMLzw?autoplay=1" frameborder="0" allowfullscreen></iframe> -->
+				<div id="player"></div>
+            </div>
+
+            <div id="animations" class="step slide" data-x="-3000" data-y="-1500" data-rotate="270">
+                <div><img class="full_pic" src="img/Hydrangeas.jpg"></div>
+            </div>
+
+            <!-- div id="overview" class="step" data-x="-1000" data-y="-1500" data-scale="5">
+            </div -->
+        </div>
+       <script src="js/impress.js"></script>
+        <script src="js/jquery.min.js"></script>
+		<script src="js/bshow.js"></script>
+        <script>
+            var api = impress();
+            api.init();
+
+	// videos
+//	var videos = ["hS5CfP8n_js", "zHvBPwNUBS8", "DCzxs9eH9P0"];
+	var videos = ["<%= page_params.video_id %>"];   // just one for now
+			
+	var timing = 2000;
+	var video_timing = timing * 5 // will be set later
+	var interval = 0;
+	// auto-play code
+	$(document).ready(function(){
+  
+  //             interval = setInterval(function(){
+   //                 api.next();
+    //            },timing);
+	interval = setInterval(api.next, timing);
+
+	// play audio
+	playSound();
+		
+	// impress stepping events
+	document.addEventListener('impress:stepenter', function(e){
+		clearInterval(interval);
+		var duration = timing;
+		if(e.target.getAttribute('id') == "video")
+		{
+			pauseSound();
+			player.playVideo();
+			duration  = video_timing;
+		}
+		interval = setInterval(api.next, duration);
+	});
+
+        document.addEventListener("impress:stepleave", function (event) {
+		if(event.target.getAttribute('id') == "video")
+		{
+			player.stopVideo();
+			playSound();
+			player.cueVideoById(getVideoId());  // randomly loads the next video
+		}
+        }, false);
+		
+            });  // end of ready()
+
+	// youtube player
+	 var tag = document.createElement('script');
+	 
+	tag.src = "https://www.youtube.com/iframe_api";
+	var firstScriptTag = document.getElementsByTagName('script')[0];
+	firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+	// 3. This function creates an <iframe> (and YouTube player)
+	//    after the API code downloads.
+	var player;
+	function onYouTubeIframeAPIReady() {
+			var v_id = getVideoId();
+			console.log(v_id);
+			player = new YT.Player('player', {
+			height: '390',
+			width: '640',
+			videoId: v_id,
+			events: {
+				'onReady': onPlayerReady,
+				'onStateChange': onPlayerStateChange
+			}
+		});
+	}
+	function onPlayerReady(event) {
+	//       event.target.playVideo();
+		video_timing = player.getDuration() * 1000;
+		if(video_timing == 0) video_timing = timing*5; 
+		var max_timing = 15*60*1000;     // 15min
+		if(video_timing > max_timing)
+			video_timing = max_timing;
+	}
+	function onPlayerStateChange(event) {
+		if (event.data == YT.PlayerState.CUED) {
+		}
+	}
+	function getVideoId()
+	{
+		var r_idx = Math.floor(Math.random() * videos.length);
+		console.log(r_idx);
+		return videos[r_idx];
+	}
+	
+        </script>
+    </body>
+</html>
+

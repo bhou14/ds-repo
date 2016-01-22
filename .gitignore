@@ -1,0 +1,5 @@
+#webstorm project
+.idea
+# test files
+test.js
+output.txt
