@@ -1,5 +1,5 @@
 /**
- * Created by a255610 on 01/10/2016.
+ * Created by Hou, Bing on 01/10/2016.
  */
 
 // Load required packages
