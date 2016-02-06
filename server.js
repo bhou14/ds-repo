@@ -62,3 +62,5 @@ app.use(router);
 
 // Start the server
 app.listen(3000);
+console.log('sever listening on port 3000');
+
