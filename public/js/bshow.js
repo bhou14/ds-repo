@@ -30,4 +30,12 @@ function exitFullscreen() {
       var song = document.getElementsByTagName('audio')[0];
       song.pause();
  }
- 
+
+function init_app() {
+
+    document.addEventListener("keydown", function (event) {
+        if (event.keyCode === 32) {
+            launchFullscreen(document.documentElement);
+        }
+    }, false);
+}

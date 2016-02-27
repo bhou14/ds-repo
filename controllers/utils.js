@@ -1,9 +1,12 @@
 /**
- * Created by a255610 on 01/16/2016.
+ * Created by Hou, Bing on 01/16/2016.
  */
 var http = require('http');
 
-exports.getData = function(host_nm, path_nm, func, obj) {
+exports.getData = function(url, func) {
+    var url2 = url.substring(url.indexOf("//")+2);
+    var host_nm = url2.substring(0, url2.indexOf("/"));
+    var path_nm = url2.substring(url2.indexOf("/"));
     var options = {
         hostname: host_nm,
         path: path_nm
@@ -18,7 +21,34 @@ exports.getData = function(host_nm, path_nm, func, obj) {
         });
         response.on('end', function()
         {
-            func(serverData, obj);
+            func(serverData);
         });
+    }).on('error', function(e) {
+        func(null);
     }).end();
+}
+
+exports.getImpressAttribs = function() {
+
+    // these are the items to be randomly generated
+    // data-x, data-y, data-z, data-rotate-x, data-rotate-y, data-rotate-z, data-scale
+    var r = Math.floor(Math.random() * 20);
+    var attribs = ["data-x", "data-y", "data-z", "data-rotate-x", "data-rotate-y", "data-rotate-z", "data-scale"];
+    var msg = "";
+    var starting = 2;
+    for(var i=starting; i<starting+attribs.length; i++)
+    {
+        if(msg != "")
+            msg += " ";
+        var t = r&i;
+        if(t > 0)
+        {
+            if(t < i/2)
+                t *= -1;
+            if(i != starting+attribs.length-1)
+                t *= Math.ceil(Math.random() *100);
+            msg += attribs[i-starting] + "=" + t.toString() + "";
+        }
+    }
+    return msg;
 }

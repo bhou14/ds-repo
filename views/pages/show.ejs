@@ -1,17 +1,16 @@
 <!-- views/pages/show.ejs -->
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:margin-top="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=1024" />
-        <title>Building Impressive Presentations with Impress.js | First Impress Presentation</title>
+        <title>BetterShow | Show</title>
         <link href="http://fonts.googleapis.com/css?family=Oswald:bold|Arvo:bold|Cutive+bold|Orbitron:bold|Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
         <link href="css/styles.css" rel="stylesheet" />
     </head>
     <body>
-	<div style="float:right;">
-		<button style="top: 0; right:0;" onclick="launchFullscreen(document.documentElement);">Fullscreen</button>
+	<!-- div style="float:right;"><button style="top: 0; right:0;" onclick="launchFullscreen(document.documentElement);">[]</button></div -->
 		
 	<!-- audio player -->
     <audio id="audio_player" loop>
@@ -19,50 +18,55 @@
 		<source src="audio/<%= page_params.audio %>" type="audio/ogg">
         Your browser does not support HTML5 audio.
     </audio>
-	
-	</div>
+
         <div id="impress">
-            <div id="intro" class="step slide" data-x="-1000" data-y="-1000" data-scale="3">
-                <div><p class="title1">Building Impressive Presentations</p>
-                    <p class="title1">with</p>
-                    <p class="title2">Impress.js</p></div>
-            </div>
 
-            <div id="guidelines" class="step slide" data-x="-1000" data-y="-2500" data-scale="10">
-                <iframe src="http://www.drzhangortho.com/meet_dr_zhang.html"></iframe>
+			<!-- dynamically created slides -->
+			<% slides.forEach(function(slide) { %>
+			<div id="<%= slide.id %>" class="step slide" dur="<%=slide.dur%>" <%= slide.attribs %>>
+				<% if(slide.type == "text") { %>
 
-            </div>
+				<div><p class="s_title1"><%= slide.title %></p>
+					<p class="s_title2"><%= slide.description %></p>
+					<img src="<%=slide.img%>" width=300/>
+					<div class="credit"><%= slide.credit %></div>
+				</div>
 
-            <div id="graphic" class="step slide" data-x="1000" data-y="-1500" data-rotate="90">
-                <!-- iframe src="http://www.marketwatch.com/markets"></iframe -->
-				<div class="round">Step 2</div>
+				<% } else if(slide.type == "iframe") { %>
 
-            </div>
+					<iframe style="margin-top:40px;" src="<%= slide.src %>"></iframe>
 
-            <div id="video" class="step slide" data-x="-1000" data-y="-500" data-rotate="180" data-rotate_z="180">
-<!-- iframe width="640" height="385" src="http://www.youtube.com/embed/0319ZgKMLzw?autoplay=1" frameborder="0" allowfullscreen></iframe> -->
+				<% } else if(slide.type == "img") { %>
+
+					<div><img class="slide_pic" src="<%= slide.img %>"></div>
+					<p class="normal_txt"><%= slide.title %></p>
+					<p class="credit"><%= slide.credit %></p>
+
+				<% } %>
+			</div>
+			<% }); %>
+
+			<!-- the youtube player -->
+            <div id="video" class="step slide" <%= page_params.video_attrib %>>
 				<div id="player"></div>
             </div>
 
-            <div id="animations" class="step slide" data-x="-3000" data-y="-1500" data-rotate="270">
-                <div><img class="full_pic" src="img/Hydrangeas.jpg"></div>
-            </div>
+        </div> <!-- end of slides -->
 
-            <!-- div id="overview" class="step" data-x="-1000" data-y="-1500" data-scale="5">
-            </div -->
-        </div>
-       <script src="js/impress.js"></script>
+
+       	<script src="js/impress.js"></script>
         <script src="js/jquery.min.js"></script>
 		<script src="js/bshow.js"></script>
+
         <script>
             var api = impress();
             api.init();
+			init_app();
 
 	// videos
-//	var videos = ["hS5CfP8n_js", "zHvBPwNUBS8", "DCzxs9eH9P0"];
 	var videos = ["<%= page_params.video_id %>"];   // just one for now
 			
-	var timing = 2000;
+	var timing = <%=page_params.timing%>;
 	var video_timing = timing * 5 // will be set later
 	var interval = 0;
 	// auto-play code
@@ -71,7 +75,7 @@
   //             interval = setInterval(function(){
    //                 api.next();
     //            },timing);
-	interval = setInterval(api.next, timing);
+//	interval = setInterval(api.next, timing);
 
 	// play audio
 	playSound();
@@ -80,25 +84,41 @@
 	document.addEventListener('impress:stepenter', function(e){
 		clearInterval(interval);
 		var duration = timing;
+		var dur_attr = e.target.getAttribute('dur');
+		if( dur_attr != null && dur_attr != "")
+		{
+			duration = parseInt(dur_attr);
+		}
 		if(e.target.getAttribute('id') == "video")
 		{
 			pauseSound();
-			player.playVideo();
+			if(player)
+				player.playVideo();
 			duration  = video_timing;
+		}
+		else if(e.target.getAttribute('id').indexOf("video_") != -1) // a streaming vedio slide
+		{
+			pauseSound();
 		}
 		interval = setInterval(api.next, duration);
 	});
 
-        document.addEventListener("impress:stepleave", function (event) {
-		if(event.target.getAttribute('id') == "video")
-		{
+	document.addEventListener("impress:stepleave", function (event) {
+		if (event.target.getAttribute('id') == "video") {
 			player.stopVideo();
 			playSound();
-			player.cueVideoById(getVideoId());  // randomly loads the next video
+//			player.cueVideoById(getVideoId());  // randomly loads the next video
 		}
-        }, false);
-		
-            });  // end of ready()
+		else if (event.target.getAttribute('id').indexOf("video_") != -1)
+		{
+			playSound();
+//			event.target.hidden = true;
+		}
+	}, false);
+
+		//  reload content event
+		setTimeout(reloadContent, parseInt('<%= page_params.reload_timing %>'));
+	});  // end of document ready()
 
 	// youtube player
 	 var tag = document.createElement('script');
@@ -111,7 +131,7 @@
 	//    after the API code downloads.
 	var player;
 	function onYouTubeIframeAPIReady() {
-			var v_id = getVideoId();
+			var v_id = videos[0];
 			console.log(v_id);
 			player = new YT.Player('player', {
 			height: '390',
@@ -135,13 +155,13 @@
 		if (event.data == YT.PlayerState.CUED) {
 		}
 	}
-	function getVideoId()
-	{
-		var r_idx = Math.floor(Math.random() * videos.length);
-		console.log(r_idx);
-		return videos[r_idx];
-	}
-	
+
+			function reloadContent() {
+				console.log("======================== reloadContent called.");
+
+				location.reload();
+			}
+
         </script>
     </body>
 </html>

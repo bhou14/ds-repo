@@ -3,6 +3,7 @@
  */
 
 // Load required packages
+var fs = require('fs');
 var path = require('path');
 var express = require('express');
 var compression = require('compression');
@@ -60,7 +61,18 @@ router.get('/auth/twitter/callback', authController.twitterCallback, function(re
 // Register all our routes
 app.use(router);
 
+// get the list of all audio files
+fs.readdir(path.normalize(__dirname + '/public/audio'), function(err, files){
+ if(!err)
+ {
+     var audio_files = [];
+     files.forEach(function(file){
+        audio_files.push(file);
+     })
+     app.set('audio_files', audio_files);
+ }
+});
+
 // Start the server
 app.listen(3000);
-console.log('sever listening on port 3000');
-
+console.log("bettershow app listening on port 3000");

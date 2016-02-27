@@ -1,0 +1,46 @@
+<!-- views/pages/streaming.ejs -->
+
+<!DOCTYPE html>
+<html lang="en" xmlns:margin-top="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=1024" />
+        <title>BetterShow - Video Streaming</title>
+        <link href="http://fonts.googleapis.com/css?family=Oswald:bold|Arvo:bold|Cutive+bold|Orbitron:bold|Open+Sans:regular,semibold,italic,italicsemibold|PT+Sans:400,700,400italic,700italic|PT+Serif:400,700,400italic,700italic" rel="stylesheet" />
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+	<!-- div style="float:right;"><button style="top: 0; right:0;" onclick="launchFullscreen(document.documentElement);">[]</button></div -->
+
+        <div id="impress">
+
+			<div id="vs_id0" class="step slide" <%= page_params.video_attrib %>>
+					<iframe style="margin-top:40px;" src="<%= page_params.streaming_video %>"></iframe>
+			</div>
+
+        </div>
+
+
+       	<script src="js/impress.js"></script>
+        <script src="js/jquery.min.js"></script>
+		<script src="js/bshow.js"></script>
+
+        <script>
+            var api = impress();
+            api.init();
+			init_app();
+
+	$(document).ready(function(){
+		setTimeout(reloadContent, parseInt('<%= page_params.reload_timing %>'));
+	});
+
+	function reloadContent() {
+		console.log("======================== reloadContent called.");
+
+		location.reload();
+	}
+
+        </script>
+    </body>
+</html>
+
