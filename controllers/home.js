@@ -36,7 +36,7 @@ exports.show = function(req, res) {
 //        {type: 'text', id: 'id1', title: 'title string', description: 'description text', attribs: '', src: ''}
     ];
 */
-    if(Math.floor(Math.random() < 0.0)) {   // 30% do a streaming video
+    if(Math.floor(Math.random() < 0.2)) {   // 20% do a streaming video
         res.render('pages/streaming', {
             page_params: page_params
         });

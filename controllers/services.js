@@ -11,11 +11,10 @@ exports.GetFeeds = function() {
     return Q.Promise(function (resolve, reject, notify) {
         // feed functions
         var funcs = [];
-        funcs.push(GetCNNTopStories());
+        GetRandomFeed(funcs);
         funcs.push(GetTodayMarket());
-        funcs.push(GetFoxSports());
-        funcs.push(GetLocalWeather());
         funcs.push(GetImgFeed());
+        funcs.push(GetLocalWeather());
         // get them all
         Q.allSettled(funcs).then(function (results) {
             var slides = [];
@@ -29,14 +28,9 @@ exports.GetFeeds = function() {
                     var reason = result.reason;
                 }
             });
+            utils.shuffle(slides);
             resolve(slides);
         });
-    });
-}
-
-function GetCNNTopStories(){
-    return Q.Promise(function(resolve, reject, notify) {
-        getRSSFeed(resolve, reject, config.cnn_top_stories_url, 'cn', 'media:thumbnail');
     });
 }
 
@@ -48,7 +42,8 @@ function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
                 if (result) {
                     var objs = [];
                     var source = result.rss.channel[0].title[0];
-                    source += ", " + result.rss.channel[0].pubDate[0];
+                    if(result.rss.channel[0].pubDate)  
+                        source += ", " + result.rss.channel[0].pubDate[0];
                     var ar = result.rss.channel[0].item;
                     for (var i = 0; i < ar.length; i++) {
                         if(i == config.FEED_LIMIT) break;   // get only top 10
@@ -56,9 +51,12 @@ function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
                         var desc = ar[i].description[0];
                         if(desc.indexOf("<") != -1)
                             desc = desc.substring(0, desc.indexOf("<"));
-                        var media = ar[i][media_tag][0]['$'].url;
-                        if(media.indexOf("logo") != -1)
-                            media = "";               // don't use logo
+                        var media = "";
+                        if(media_tag != "") {
+                            media = ar[i][media_tag][0]['$'].url;
+                            if(media.indexOf("logo") != -1)
+                                media = "";               // don't use logo
+                        }
                         var id = id_nm + "_id" + i;
                         var attrs = utils.getImpressAttribs();
                         objs.push({
@@ -76,16 +74,26 @@ function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
             });
         }
         else {
-            console.log("cannot get top stories feed");
-            reject(new Error("cannot get top stories feed"));
+            console.log("cannot get feed");
+            reject(new Error("cannot get feed"));
         }
     })
 }
 
-function GetFoxSports(){
-    return Q.Promise(function(resolve, reject, notify) {
-        getRSSFeed(resolve, reject, config.fox_sports_url, 'fs', 'enclosure');
-    });
+function GetRandomFeed(funcs) {
+    var picked = [];
+
+    while(picked.length < config.RANDOM_FEED_NUM) {
+        var r = Math.floor(Math.random() * config.rss_feeds.length);
+            if(picked.indexOf(r) == -1)
+                picked.push(r);
+    }
+    for(var i = 0; i < picked.length; i++) {
+        funcs.push(Q.Promise(function(resolve, reject, notify) {
+            var feed = config.rss_feeds[picked[i]];
+            getRSSFeed(resolve, reject, feed.url, feed.id_nm, feed.media_tag);
+        }));
+    }
 }
 
 function GetImgFeed(){
