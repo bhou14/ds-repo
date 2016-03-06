@@ -39,43 +39,51 @@ function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
         if (severData) {
             var xml_parser = xml2js.parseString;
             xml_parser(severData, function (err, result) {
-                if (result) {
-                    var objs = [];
-                    var source = result.rss.channel[0].title[0];
-                    if(result.rss.channel[0].pubDate)  
-                        source += ", " + result.rss.channel[0].pubDate[0];
-                    var ar = result.rss.channel[0].item;
-                    for (var i = 0; i < ar.length; i++) {
-                        if(i == config.FEED_LIMIT) break;   // get only top 10
-                        var title = ar[i].title[0];
-                        var desc = ar[i].description[0];
-                        if(desc.indexOf("<") != -1)
-                            desc = desc.substring(0, desc.indexOf("<"));
-                        var media = "";
-                        if(media_tag != "") {
-                            media = ar[i][media_tag][0]['$'].url;
-                            if(media.indexOf("logo") != -1)
-                                media = "";               // don't use logo
+                try
+                {
+                    if (result) {
+                        var objs = [];
+                        var source = result.rss.channel[0].title[0];
+                        if(result.rss.channel[0].pubDate)
+                            source += ", " + result.rss.channel[0].pubDate[0];
+                        var ar = result.rss.channel[0].item;
+                        for (var i = 0; i < ar.length; i++) {
+                            if(i == config.FEED_LIMIT) break;   // get only top 10
+                            var title = ar[i].title[0];
+                            var desc = ar[i].description[0];
+                            if(desc.indexOf("<") != -1)
+                                desc = desc.substring(0, desc.indexOf("<"));
+                            var media = "";
+                            if(media_tag != "") {
+                                media = ar[i][media_tag][0]['$'].url;
+                                if(media.indexOf("logo") != -1)
+                                    media = "";               // don't use logo
+                            }
+                            var id = id_nm + "_id" + i;
+                            var attrs = utils.getImpressAttribs();
+                            objs.push({
+                                type: 'text',
+                                id: id,
+                                title: title,
+                                description: desc,
+                                attribs: attrs,
+                                img: media,
+                                credit: source
+                            });
                         }
-                        var id = id_nm + "_id" + i;
-                        var attrs = utils.getImpressAttribs();
-                        objs.push({
-                            type: 'text',
-                            id: id,
-                            title: title,
-                            description: desc,
-                            attribs: attrs,
-                            img: media,
-                            credit: source
-                        });
+                        resolve(objs);
                     }
-                    resolve(objs);
+                }
+                catch(err)
+                {
+                    console.log("feed " + url + " parsing error: " + err);
+                    reject(new Error("feed parsing error: " + err));
                 }
             });
         }
         else {
-            console.log("cannot get feed");
-            reject(new Error("cannot get feed"));
+            console.log("cannot get feed " + url);
+            reject(new Error("cannot get feed " + url));
         }
     })
 }
@@ -102,32 +110,40 @@ function GetImgFeed(){
             if (severData) {
                 var xml_parser = xml2js.parseString;
                 xml_parser(severData, function (err, result) {
-                    if (result) {
-                        var objs = [];            // return values
-                        var ar = result.rss.channel[0].item;
-                        for (var i = 0; i < ar.length; i++) {
-                            if(i == config.FEED_LIMIT) break;
-                            var title = ar[i].title[0];
-                            var desc = ar[i].description[0];
-                            var ml = desc.match("^.*<img src=\"(.*?)\" (.*)"); // get the img url
-                            var media = "";
-                            if(ml.length>1) media = ml[1];
-                            var source = "";
-                            ml = desc.match("^.*Source: (.*?)</.*");
-                            if(ml.length>1) source = ml[1];
-                            var id = "if_id" + i;
-                            var attrs = utils.getImpressAttribs();
-                            objs.push({
-                                type: 'img',
-                                id: id,
-                                title: title,
-                                // description: desc,
-                                attribs: attrs,
-                                img: media,
-                                credit: source
-                            });
+                    try
+                    {
+                        if (result) {
+                            var objs = [];            // return values
+                            var ar = result.rss.channel[0].item;
+                            for (var i = 0; i < ar.length; i++) {
+                                if(i == config.FEED_LIMIT) break;
+                                var title = ar[i].title[0];
+                                var desc = ar[i].description[0];
+                                var ml = desc.match("^.*<img src=\"(.*?)\" (.*)"); // get the img url
+                                var media = "";
+                                if(ml.length>1) media = ml[1];
+                                var source = "";
+                                ml = desc.match("^.*Source: (.*?)</.*");
+                                if(ml.length>1) source = ml[1];
+                                var id = "if_id" + i;
+                                var attrs = utils.getImpressAttribs();
+                                objs.push({
+                                    type: 'img',
+                                    id: id,
+                                    title: title,
+                                    // description: desc,
+                                    attribs: attrs,
+                                    img: media,
+                                    credit: source
+                                });
+                            }
+                            resolve(objs);
                         }
-                        resolve(objs);
+                    }
+                    catch(err)
+                    {
+                        console.log("feed " + config.images_feed + " parsing error: " + err);
+                        reject(new Error("feed parsing error: " + err));
                     }
                 });
             }
