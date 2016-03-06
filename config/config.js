@@ -10,7 +10,7 @@ module.exports = {
     images_feed: 'http://www.rssmicro.com/feeds/images.rss',              // http://localhost/image_feed.xml
 
     SLIDE_TIMING: 15000,        // 15 seconds
-    FEED_LIMIT: 8,              // limit slides from each feed
+    FEED_LIMIT: 10,              // limit slides from each feed
     RELOAD_TIMING: 30*60*1000,  // 30min reload
 
     videos: [
