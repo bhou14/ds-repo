@@ -5,7 +5,6 @@
 module.exports = {
     local_weather_url: 'https://weather.com/weather/today/l/02132:4:US',
     today_stock_market: 'http://www.cnbc.com',
-    reuters_video: 'http://www.reuters.com/video',
     abc_news_video: 'http://abcnews.go.com/Live',
     images_feed: 'http://www.rssmicro.com/feeds/images.rss',              // http://localhost/image_feed.xml
 
@@ -32,6 +31,10 @@ module.exports = {
     rss_feeds_test: [          // switch this in test env with the one above
         { name: 'cnn_top', id_nm: 'cn', media_tag: 'media:thumbnail', url: '// http://localhost/cnn_topstories.xml' },
         { name: 'fox_sport', id_nm: 'fs', media_tag: 'enclosure', url: '// http://localhost/fox_sports.xml'}
+    ],
+    video_stream: [
+        { name: 'cbs_news', url: 'http://www.cbsnews.com/live/' },
+        { name: 'reuters', url: 'http://www.reuters.com/video'}
     ],
     RANDOM_FEED_NUM: 3         // number of feeds from above rss_feeds array
 }

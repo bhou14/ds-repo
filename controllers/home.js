@@ -23,20 +23,16 @@ exports.index = function(req, res) {
 exports.show = function(req, res) {
     var page_params = {
         video_id: 'DCzxs9eH9P0',
-//        video_id: 'IdneKLhsWOQ',
-//        audio: 'OGG_SAMPLE.ogg',
 	    audio: 'amclassical_beethoven_fur_elise.mp3',
         timing: config.SLIDE_TIMING,
         reload_timing: config.RELOAD_TIMING,
-        streaming_video: config.reuters_video
+        streaming_video: config.video_stream[0].url
     };
     page_params.video_attrib = utils.getImpressAttribs();
-    // the slide array
-/*    var slides = [
-//        {type: 'text', id: 'id1', title: 'title string', description: 'description text', attribs: '', src: ''}
-    ];
-*/
+ 
     if(Math.floor(Math.random() < 0.2)) {   // 20% do a streaming video
+        // randomly pick a stream
+        page_params.streaming_video = config.video_stream[Math.floor(Math.random() * config.video_stream.length)].url;
         res.render('pages/streaming', {
             page_params: page_params
         });
