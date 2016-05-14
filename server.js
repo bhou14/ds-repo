@@ -47,7 +47,8 @@ app.use(express.static(path.normalize(__dirname + '/public'), {maxAge: oneDay}))
 var router = express.Router();
 
 // index page route
-router.get('/', homeController.index);
+//router.get('/', homeController.index);
+router.get('/', homeController.show);
 
 // show page route
 router.get('/show', homeController.show);
