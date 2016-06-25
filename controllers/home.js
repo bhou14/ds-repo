@@ -5,21 +5,39 @@ var utils = require('./utils');
 var serv = require('./services');
 var config = require('../config/config');
 
-exports.index = function(req, res) {
-    var drinks = [
-        { name: 'Bloody Mary', drunkness: 3 },
-        { name: 'Martini', drunkness: 5 },
-        { name: 'Scotch', drunkness: 10 }
-    ];
-    var tagline = "This comes from home controller's index function.";
 
-    res.render('pages/index', {
-        drinks: drinks,
-        tagline: tagline
-    });
+/** the controller for testing feeds */
+exports.index = function(req, res) {
+    var page_params = {
+        video_id: 'DCzxs9eH9P0',
+        audio: 'amclassical_beethoven_fur_elise.mp3',
+        feed: { url: 'http://rss.cnn.com/rss/cnn_topstories.rss', id_nm: 'test', media_tag: 'media:group', media_tag2: 'media:content'},
+        timing: config.SLIDE_TIMING,
+        reload_timing: config.RELOAD_TIMING,
+        streaming_video: 'http://www.bloomberg.com/live'
+    };
+    page_params.video_attrib = utils.getImpressAttribs();
+ 
+    var video_ratio = 0;
+    if(Math.floor(Math.random() < video_ratio)) {   // 20% do a streaming video
+        res.render('pages/streaming', {
+            page_params: page_params
+        });
+    }
+    else {
+        serv.GetTestFeed(page_params.feed).then(function (slides) {
+            res.render('pages/show', {
+                page_params: page_params,
+                slides: slides
+            });
+        }).done();
+    }
 }
 
-/** The main show controller **/
+
+/*******************************
+** The main show controller   **
+********************************/
 exports.show = function(req, res) {
     var page_params = {
         video_id: 'DCzxs9eH9P0',

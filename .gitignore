@@ -3,3 +3,4 @@
 # test files
 test.js
 output.txt
+*.log

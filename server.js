@@ -53,6 +53,9 @@ router.get('/', homeController.show);
 // show page route
 router.get('/show', homeController.show);
 
+// test page route
+router.get('/test', homeController.index);
+
 // auth routes
 router.get('/auth/twitter', authController.twitter);
 router.get('/auth/twitter/callback', authController.twitterCallback, function(req, res) {

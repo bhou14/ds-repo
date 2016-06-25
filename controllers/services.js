@@ -7,6 +7,32 @@ var Q = require('q');
 var config = require('../config/config');
 
 
+exports.GetTestFeed = function(feed) {
+    return Q.Promise(function(resolve, reject, notify) {
+        var funcs = [];
+ //       funcs.push(Q.Promise(function(resolve, reject, notify) {
+   //         getRSSFeed(resolve, reject, feed);
+     //   }));
+        funcs.push(GetSlideShow());
+
+        Q.allSettled(funcs).then(function (results) {
+            var slides = [];
+            results.forEach(function (result) {
+                if (result.state === "fulfilled") {
+                    var value = result.value;
+                    value.forEach(function (r) {
+                        slides.push(r);
+                    });
+                } else {
+                    var reason = result.reason;
+                }
+            });
+            utils.shuffle(slides);
+            resolve(slides);
+        });        
+    });
+}
+
 exports.GetFeeds = function() {
     return Q.Promise(function (resolve, reject, notify) {
         // feed functions
@@ -15,6 +41,7 @@ exports.GetFeeds = function() {
         funcs.push(GetTodayMarket());
         funcs.push(GetImgFeed());
         funcs.push(GetLocalWeather());
+        funcs.push(GetSlideShow());
         // get them all
         Q.allSettled(funcs).then(function (results) {
             var slides = [];
@@ -34,8 +61,8 @@ exports.GetFeeds = function() {
     });
 }
 
-function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
-    utils.getData(url, function (severData) {
+function getRSSFeed(resolve, reject, feed) {
+    utils.getData(feed.url, function (severData) {
         if (severData) {
             var xml_parser = xml2js.parseString;
             xml_parser(severData, function (err, result) {
@@ -54,12 +81,16 @@ function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
                             if(desc.indexOf("<") != -1)
                                 desc = desc.substring(0, desc.indexOf("<"));
                             var media = "";
-                            if(media_tag != "") {
-                                media = ar[i][media_tag][0]['$'].url;
+                            if(feed.media_tag != "") {
+                                if(typeof feed.media_tag2 !== "undefined" && feed.media_tag2 != "") {
+                                    media = ar[i][feed.media_tag][0][feed.media_tag2][0]['$'].url;
+                                }
+                                else
+                                    media = ar[i][feed.media_tag][0]['$'].url;
                                 if(media.indexOf("logo") != -1)
                                     media = "";               // don't use logo
                             }
-                            var id = id_nm + "_id" + i;
+                            var id = feed.id_nm + "_id" + i;
                             var attrs = utils.getImpressAttribs();
                             objs.push({
                                 type: 'text',
@@ -76,14 +107,14 @@ function getRSSFeed(resolve, reject, url, id_nm, media_tag) {
                 }
                 catch(err)
                 {
-                    console.log("feed " + url + " parsing error: " + err);
+                    console.log("feed " + feed.url + " parsing error: " + err);
                     reject(new Error("feed parsing error: " + err));
                 }
             });
         }
         else {
-            console.log("cannot get feed " + url);
-            reject(new Error("cannot get feed " + url));
+            console.log("cannot get feed " + feed.url);
+            reject(new Error("cannot get feed " + feed.url));
         }
     })
 }
@@ -99,7 +130,7 @@ function GetRandomFeed(funcs) {
     for(var i = 0; i < picked.length; i++) {
         funcs.push(Q.Promise(function(resolve, reject, notify) {
             var feed = config.rss_feeds[picked[i]];
-            getRSSFeed(resolve, reject, feed.url, feed.id_nm, feed.media_tag);
+            getRSSFeed(resolve, reject, feed);
         }));
     }
 }
@@ -167,6 +198,17 @@ function GetTodayMarket() {
     return Q.Promise(function(resolve, reject, notify){
         var objs = [];
         objs.push({ type: 'iframe', id: 'sm_id0', src: config.today_stock_market, dur: 20000 });
+        resolve(objs);
+    });
+}
+
+function GetSlideShow() {
+    return Q.Promise(function(resolve, reject, notify) {
+        var objs = [];
+        // pick a random slide show
+        var r = Math.floor(Math.random() * config.slide_show.length);
+        var src = config.slide_show[r].url;
+        objs.push({type: 'iframe', id: 'ss_id0', src: src, dur: 70000});
         resolve(objs);
     });
 }
